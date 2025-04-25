@@ -168,13 +168,7 @@ Breaths per minute; a rise with low ventilation could indicate shallow or ineffi
 Volume of air per breath. Deep, efficient breathing results in a higher VT at lower BF.""")
         st.metric("Peak Tidal Volume", f"{df['VT(l)'].max():.2f} L")
 
-    if 'FETO2' in df.columns and 'FETCO2' in df.columns and 'PETO2 (mmHg)' in df.columns and 'PETCO2(mmHg)' in df.columns:
-        st.markdown("""**End-Tidal Gases (FETO₂, FETCO₂, PETO₂, PETCO₂)**  
-Gas concentrations at the end of exhalation; indicate pulmonary exchange quality.""")
-        st.metric("Peak FETO₂", f"{df['FETO2'].max():.2f}")
-        st.metric("Peak FETCO₂", f"{df['FETCO2'].max():.2f}")
-        st.metric("Peak PETO₂", f"{df['PETO2 (mmHg)'].max():.1f} mmHg")
-        st.metric("Peak PETCO₂", f"{df['PETCO2(mmHg)'].max():.1f} mmHg")
+    
 
     st.subheader("🧘 Recovery Metrics")
     if 'HR(bpm)' in df.columns:
