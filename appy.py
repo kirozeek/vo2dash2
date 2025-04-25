@@ -43,14 +43,33 @@ if uploaded_file:
     st.dataframe(df.head())
 
     def rank_vo2_max(vo2, age, gender):
-        thresholds = {
-            'Male': [(13, 30), (33, 40), (37, 45), (41, 50), (45, 60)],
-            'Female': [(11, 28), (30, 35), (33, 40), (37, 45), (41, 50)]
+        vo2_tables = {
+            'Male': {
+                (13, 19): [34.9, 38.3, 45.1, 50.9, 55.9],
+                (20, 29): [32.9, 36.4, 42.4, 46.4, 52.4],
+                (30, 39): [31.4, 35.4, 40.9, 44.9, 49.4],
+                (40, 49): [30.1, 33.5, 38.9, 43.7, 48.0],
+                (50, 59): [25.9, 30.9, 35.7, 39.9, 45.3],
+                (60, 69): [20.3, 26.0, 32.2, 36.4, 44.2]
+            },
+            'Female': {
+                (13, 19): [24.9, 30.9, 34.9, 38.9, 41.9],
+                (20, 29): [23.5, 28.9, 32.9, 36.9, 41.0],
+                (30, 39): [22.7, 26.9, 31.4, 35.6, 40.0],
+                (40, 49): [20.9, 24.4, 28.9, 32.8, 36.9],
+                (50, 59): [20.1, 22.7, 26.9, 31.4, 35.7],
+                (60, 69): [17.4, 20.1, 24.4, 30.2, 31.4]
+            }
         }
-        for rank, (low, high) in zip(["Very Poor", "Poor", "Fair", "Good", "Excellent"], thresholds[gender]):
-            if low <= vo2 <= high:
-                return rank
-        return "Superior" if vo2 > thresholds[gender][-1][1] else "Very Poor"
+        for (min_age, max_age), thresholds in vo2_tables[gender].items():
+            if min_age <= age <= max_age:
+                if vo2 <= thresholds[0]: return "Very Poor"
+                elif vo2 <= thresholds[1]: return "Poor"
+                elif vo2 <= thresholds[2]: return "Fair"
+                elif vo2 <= thresholds[3]: return "Good"
+                elif vo2 <= thresholds[4]: return "Excellent"
+                else: return "Superior"
+        return "Unknown"
 
     st.subheader("🏃‍♂️ Core VO₂ Max Test Metrics")
     if 'VO2(ml/min)' in df.columns:
@@ -140,3 +159,28 @@ Estimated at HR: **{vt2_hr} bpm** — marks onset of intense anaerobic effort.""
 
     st.subheader("📉 Summary Statistics")
     st.write(df[numeric_cols].describe())
+
+    st.subheader("📚 VO₂ Max Classification Table")
+    st.markdown("**Male VO₂ Max Ratings (ml/kg/min)**")
+    male_table = pd.DataFrame({
+        "Age Range": ["13-19", "20-29", "30-39", "40-49", "50-59", "60-69"],
+        "Very Poor": ["0–34.9", "0–32.9", "0–31.4", "0–30.1", "0–25.9", "0–20.3"],
+        "Poor": ["35–38.3", "33–36.4", "31.5–35.4", "30.2–33.5", "26–30.9", "20.4–26.0"],
+        "Fair": ["38.4–45.1", "36.5–42.4", "35.5–40.9", "33.6–38.9", "31–35.7", "26.1–32.2"],
+        "Good": ["45.2–50.9", "42.5–46.4", "41–44.9", "39–43.7", "35.8–39.9", "32.3–36.4"],
+        "Excellent": ["51–55.9", "46.5–52.4", "45–49.4", "43.8–48.0", "41–45.3", "36.5–44.2"],
+        "Superior": ["56+", "52.5+", "49.5+", "48.1+", "45.4+", "44.3+"]
+    })
+    st.dataframe(male_table)
+
+    st.markdown("**Female VO₂ Max Ratings (ml/kg/min)**")
+    female_table = pd.DataFrame({
+        "Age Range": ["13-19", "20-29", "30-39", "40-49", "50-59", "60-69"],
+        "Very Poor": ["0–24.9", "0–23.5", "0–22.7", "0–20.9", "0–20.1", "0–17.4"],
+        "Poor": ["25–30.9", "23.6–28.9", "22.8–26.9", "21–24.4", "20.2–22.7", "17.5–20.1"],
+        "Fair": ["31–34.9", "29–32.9", "27–31.4", "24.5–28.9", "22.8–26.9", "20.2–24.4"],
+        "Good": ["35–38.9", "33–36.9", "31.5–35.6", "29–32.8", "27–31.4", "24.5–30.2"],
+        "Excellent": ["39–41.9", "37–41", "35.7–40", "32.9–36.9", "31.5–35.7", "30.3–31.4"],
+        "Superior": ["42+", "41.1+", "40.1+", "37+", "35.8+", "31.5+"]
+    })
+    st.dataframe(female_table)
