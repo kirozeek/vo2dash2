@@ -187,8 +187,18 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
                 "Recovery (bpm)": [int(round(recovery_1min)), int(round(recovery_2min))]
             }
             recovery_df = pd.DataFrame(recovery_data)
-            st.dataframe(recovery_df, hide_index=True)
-            st.markdown(f"**2-Min Heart Rate Recovery:** {int(round(recovery_2min))} bpm")
+            combined_recovery_data = {
+                "Metric": [
+                    "1-Min Heart Rate Recovery", "2-Min Heart Rate Recovery",
+                    "1-Min VCO₂ Recovery", "2-Min VCO₂ Recovery"
+                ],
+                "Value": [
+                    f"{int(round(recovery_1min))} bpm", f"{int(round(recovery_2min))} bpm",
+                    f"{recovery_vco2_1min:.2f} ml/min", f"{recovery_vco2_2min:.2f} ml/min"
+                ]
+            }
+            combined_df = pd.DataFrame(combined_recovery_data)
+            st.dataframe(combined_df, hide_index=True)
 
             half_recovery_time_sec = df.loc[hr_1min_idx, 'T(sec)'] - df.loc[max_hr_idx, 'T(sec)']
 
@@ -233,8 +243,7 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
                 "Recovery (ml/min)": [f"{recovery_vco2_1min:.2f}", f"{recovery_vco2_2min:.2f}"]
             }
             vco2_recovery_df = pd.DataFrame(vco2_recovery_data)
-            st.dataframe(vco2_recovery_df, hide_index=True)
-            st.markdown(f"**2-Min VCO₂ Recovery:** {recovery_vco2_2min:.2f} ml/min")
+            
 
     if 'RER' in df.columns:
         st.markdown("**RER Recovery Trend**")
