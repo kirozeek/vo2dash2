@@ -148,7 +148,7 @@ if uploaded_file:
         fatmax_hr = int(round(df.loc[fatmax_idx, 'HR(bpm)'])) if 'HR(bpm)' in df.columns else 'N/A'
         st.markdown(f"**FatMax Zone**\n\nFat oxidation peaked at HR: **{fatmax_hr} bpm**")
 
-        crossover_points = df[df['CARBS(%)'] > df['FAT(%)']]
+        crossover_points = df[(df['CARBS(%)'] > df['FAT(%)']) & (df['T(sec)'] > 100)]
         if not crossover_points.empty and 'HR(bpm)' in df.columns:
             crossover_hr_list = crossover_points['HR(bpm)'].dropna().round().astype(int).tolist()
             st.markdown(f"""**Crossover Points**  
