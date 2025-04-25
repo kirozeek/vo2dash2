@@ -97,7 +97,7 @@ if uploaded_file:
             "Excellent": ["51–55.9", "46.5–52.4", "45–49.4", "43.8–48.0", "41–45.3", "36.5–44.2"],
             "Superior": ["56+", "52.5+", "49.5+", "48.1+", "45.4+", "44.3+"]
         })
-        st.dataframe(male_table)
+        st.dataframe(male_table, hide_index=True)
 
         st.markdown("**Female VO₂ Max Ratings (ml/kg/min)**")
         female_table = pd.DataFrame({
@@ -109,7 +109,7 @@ if uploaded_file:
             "Excellent": ["39–41.9", "37–41", "35.7–40", "32.9–36.9", "31.5–35.7", "30.3–31.4"],
             "Superior": ["42+", "41.1+", "40.1+", "37+", "35.8+", "31.5+"]
         })
-        st.dataframe(female_table)
+        st.dataframe(female_table, hide_index=True)
 
     if 'HR(bpm)' in df.columns:
         st.markdown("**Heart Rate (HR, bpm) – Cardiac Effort**\n\nShows cardiovascular response. Important for training zones and recovery.")
