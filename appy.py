@@ -171,6 +171,8 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
     
 
     st.subheader("🧘 Recovery Metrics")
+    recovery_1min = recovery_2min = recovery_vco2_1min = recovery_vco2_2min = None
+
     if 'HR(bpm)' in df.columns and 'T(sec)' in df.columns:
         max_hr_idx = df['HR(bpm)'].idxmax()
         peak_hr_time = df.loc[max_hr_idx, 'T(sec)']
@@ -181,24 +183,6 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
         if hr_1min_idx and hr_2min_idx:
             recovery_1min = df.loc[max_hr_idx, 'HR(bpm)'] - df.loc[hr_1min_idx, 'HR(bpm)']
             recovery_2min = df.loc[max_hr_idx, 'HR(bpm)'] - df.loc[hr_2min_idx, 'HR(bpm)']
-
-            recovery_data = {
-                "Metric": ["1-Min Heart Rate Recovery", "2-Min Heart Rate Recovery"],
-                "Recovery (bpm)": [int(round(recovery_1min)), int(round(recovery_2min))]
-            }
-            recovery_df = pd.DataFrame(recovery_data)
-            combined_recovery_data = {
-                "Metric": [
-                    "1-Min Heart Rate Recovery", "2-Min Heart Rate Recovery",
-                    "1-Min VCO₂ Recovery", "2-Min VCO₂ Recovery"
-                ],
-                "Value": [
-                    f"{int(round(recovery_1min))} bpm", f"{int(round(recovery_2min))} bpm",
-                    f"{recovery_vco2_1min:.2f} ml/min", f"{recovery_vco2_2min:.2f} ml/min"
-                ]
-            }
-            combined_df = pd.DataFrame(combined_recovery_data)
-            st.dataframe(combined_df, hide_index=True)
 
             half_recovery_time_sec = df.loc[hr_1min_idx, 'T(sec)'] - df.loc[max_hr_idx, 'T(sec)']
 
@@ -214,7 +198,6 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
             st.markdown(f"**Heart Rate Half-Recovery Time:** {half_recovery_time_sec:.0f} seconds")
             st.markdown(f"**Recovery Interpretation:** {recovery_interpretation}")
 
-            # Plot Heart Rate Recovery
             st.markdown("**Heart Rate Recovery Curve**")
             recovery_window = df[(df['T(sec)'] >= peak_hr_time - 30) & (df['T(sec)'] <= peak_hr_time + 180)]
             fig_hr, ax_hr = plt.subplots()
@@ -238,18 +221,20 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
         if vco2_1min_idx and vco2_2min_idx:
             recovery_vco2_1min = df.loc[max_hr_idx, 'VCO2(ml/min)'] - df.loc[vco2_1min_idx, 'VCO2(ml/min)']
             recovery_vco2_2min = df.loc[max_hr_idx, 'VCO2(ml/min)'] - df.loc[vco2_2min_idx, 'VCO2(ml/min)']
-            vco2_recovery_data = {
-                "Metric": ["1-Min VCO₂ Recovery", "2-Min VCO₂ Recovery"],
-                "Recovery (ml/min)": [f"{recovery_vco2_1min:.2f}", f"{recovery_vco2_2min:.2f}"]
-            }
-            vco2_recovery_df = pd.DataFrame(vco2_recovery_data)
-            
 
-    if 'RER' in df.columns:
-        st.markdown("**RER Recovery Trend**")
-        fig, ax = plt.subplots()
-        sns.lineplot(data=df, x=df.index, y='RER', ax=ax)
-        st.pyplot(fig)
+    if recovery_1min is not None and recovery_2min is not None and recovery_vco2_1min is not None and recovery_vco2_2min is not None:
+        combined_recovery_data = {
+            "Metric": [
+                "1-Min Heart Rate Recovery", "2-Min Heart Rate Recovery",
+                "1-Min VCO₂ Recovery", "2-Min VCO₂ Recovery"
+            ],
+            "Value": [
+                f"{int(round(recovery_1min))} bpm", f"{int(round(recovery_2min))} bpm",
+                f"{recovery_vco2_1min:.2f} ml/min", f"{recovery_vco2_2min:.2f} ml/min"
+            ]
+        }
+        combined_df = pd.DataFrame(combined_recovery_data)
+        st.dataframe(combined_df, hide_index=True)
 
     st.subheader("📊 Metric Trends")
     numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
