@@ -29,11 +29,9 @@ if uploaded_file:
     st.subheader("Raw Data")
     st.dataframe(df.head())
 
-    # Convert columns to numeric where possible
     for col in df.columns:
         df[col] = pd.to_numeric(df[col], errors='ignore')
 
-    # VO2 Max and age-based ranking (basic ACSM categories)
     def rank_vo2_max(vo2, age, gender):
         thresholds = {
             'Male': [(13, 30), (33, 40), (37, 45), (41, 50), (45, 60)],
@@ -44,45 +42,47 @@ if uploaded_file:
                 return rank
         return "Superior" if vo2 > thresholds[gender][-1][1] else "Very Poor"
 
+    st.subheader("Core VO2 Metrics")
     if 'VO2(ml/min)' in df.columns:
         peak_vo2 = df['VO2(ml/min)'].max()
         vo2_kg = peak_vo2 / weight
         ranking = rank_vo2_max(vo2_kg, age, gender)
-        st.metric(label="Estimated VO2 Max (ml/kg/min)", value=f"{vo2_kg:.2f}", delta=ranking)
+        st.metric("VO2 Max (ml/min)", f"{peak_vo2:.0f}")
+        st.metric("VO2 Max (ml/kg/min)", f"{vo2_kg:.2f}", delta=ranking)
 
-    # Plotting section
-    st.subheader("Graphs & Analysis")
+    if 'HR(bpm)' in df.columns:
+        st.metric("Max Heart Rate (bpm)", f"{df['HR(bpm)'].max():.0f}")
 
-    numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
-    selected_col = st.selectbox("Select Metric to Plot", numeric_cols)
+    if 'RER' in df.columns:
+        st.metric("Max RER", f"{df['RER'].max():.2f}")
 
-    fig, ax = plt.subplots()
-    sns.lineplot(data=df, x=df.index, y=selected_col, ax=ax)
-    ax.set_title(f"{selected_col} Over Time")
-    ax.set_xlabel("Sample Point")
-    ax.set_ylabel(selected_col)
-    st.pyplot(fig)
+    if 'VCO2(ml/min)' in df.columns:
+        st.metric("Max VCO2 (ml/min)", f"{df['VCO2(ml/min)'].max():.0f}")
+
+    if 'VE(l/min)' in df.columns:
+        st.metric("Max Ventilation (VE l/min)", f"{df['VE(l/min)'].max():.1f}")
+
+    if 'MET' in df.columns:
+        st.metric("Peak METs", f"{df['MET'].max():.1f}")
 
     if 'CARBS(%)' in df.columns and 'FAT(%)' in df.columns:
+        st.subheader("Energy Substrate Utilization")
         avg_carbs = df['CARBS(%)'].mean()
         avg_fat = df['FAT(%)'].mean()
-
         fig2, ax2 = plt.subplots()
         ax2.pie([avg_carbs, avg_fat], labels=['Carbs', 'Fat'], autopct='%1.1f%%', startangle=90)
         ax2.set_title("Average Substrate Utilization")
         st.pyplot(fig2)
 
-    # Recovery metrics
     st.subheader("Recovery Metrics")
     if 'HR(bpm)' in df.columns:
         recovery_hr = df['HR(bpm)'].iloc[-1] - df['HR(bpm)'].iloc[-10]
-        st.metric(label="Heart Rate Recovery (last vs -10 point)", value=f"{recovery_hr:.2f} bpm")
+        st.metric("Heart Rate Recovery", f"{recovery_hr:.2f} bpm")
 
     if 'VCO2(ml/min)' in df.columns:
         recovery_vco2 = df['VCO2(ml/min)'].iloc[-1] - df['VCO2(ml/min)'].iloc[-10]
-        st.metric(label="VCO2 Recovery (last vs -10 point)", value=f"{recovery_vco2:.2f} ml/min")
+        st.metric("VCO2 Recovery", f"{recovery_vco2:.2f} ml/min")
 
-    # RER trends
     if 'RER' in df.columns:
         st.subheader("RER Over Time")
         fig3, ax3 = plt.subplots()
@@ -92,6 +92,15 @@ if uploaded_file:
         ax3.set_ylabel("RER")
         st.pyplot(fig3)
 
-    # Summary statistics
+    st.subheader("Metric Trends")
+    numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
+    selected_col = st.selectbox("Select Metric to Plot", numeric_cols)
+    fig, ax = plt.subplots()
+    sns.lineplot(data=df, x=df.index, y=selected_col, ax=ax)
+    ax.set_title(f"{selected_col} Over Time")
+    ax.set_xlabel("Sample Point")
+    ax.set_ylabel(selected_col)
+    st.pyplot(fig)
+
     st.subheader("Summary Statistics")
     st.write(df[numeric_cols].describe())
