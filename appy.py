@@ -199,6 +199,20 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
             st.markdown(f"**Heart Rate Half-Recovery Time:** {half_recovery_time_sec:.0f} seconds")
             st.markdown(f"**Recovery Interpretation:** {recovery_interpretation}")
 
+            # Plot Heart Rate Recovery
+            st.markdown("**Heart Rate Recovery Curve**")
+            recovery_window = df[(df['T(sec)'] >= peak_hr_time - 30) & (df['T(sec)'] <= peak_hr_time + 180)]
+            fig_hr, ax_hr = plt.subplots()
+            sns.lineplot(data=recovery_window, x='T(sec)', y='HR(bpm)', ax=ax_hr)
+            ax_hr.axvline(x=peak_hr_time, linestyle='--', color='gray', label='Peak HR')
+            ax_hr.axvline(x=peak_hr_time + 60, linestyle=':', color='green', label='1 min')
+            ax_hr.axvline(x=peak_hr_time + 120, linestyle=':', color='blue', label='2 min')
+            ax_hr.set_title("Heart Rate Recovery")
+            ax_hr.set_ylabel("HR (bpm)")
+            ax_hr.set_xlabel("Time (sec)")
+            ax_hr.legend()
+            st.pyplot(fig_hr)
+
     if 'VCO2(ml/min)' in df.columns and 'T(sec)' in df.columns:
         max_hr_idx = df['HR(bpm)'].idxmax()
         peak_time = df.loc[max_hr_idx, 'T(sec)']
