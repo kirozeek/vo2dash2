@@ -172,12 +172,29 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
 
     st.subheader("🧘 Recovery Metrics")
     if 'HR(bpm)' in df.columns:
-        recovery_hr = df['HR(bpm)'].iloc[-1] - df['HR(bpm)'].iloc[-10]
-        st.metric("Heart Rate Recovery", f"{int(round(recovery_hr))} bpm")
+        recovery_1min = df['HR(bpm)'].iloc[-1] - df['HR(bpm)'].iloc[-6]
+        recovery_2min = df['HR(bpm)'].iloc[-1] - df['HR(bpm)'].iloc[-12]
+        st.metric("Heart Rate Recovery (1 min)", f"{int(round(recovery_1min))} bpm")
+        st.metric("Heart Rate Recovery (2 min)", f"{int(round(recovery_2min))} bpm")
+
+        if recovery_1min >= 12:
+            rank_1min = "Good"
+        else:
+            rank_1min = "Poor"
+
+        if recovery_2min >= 22:
+            rank_2min = "Good"
+        else:
+            rank_2min = "Poor"
+
+        st.markdown(f"**1 Minute HR Recovery Ranking:** {rank_1min}")
+        st.markdown(f"**2 Minute HR Recovery Ranking:** {rank_2min}")
 
     if 'VCO2(ml/min)' in df.columns:
-        recovery_vco2 = df['VCO2(ml/min)'].iloc[-1] - df['VCO2(ml/min)'].iloc[-10]
-        st.metric("VCO₂ Recovery", f"{recovery_vco2:.2f} ml/min")
+        recovery_vco2_1min = df['VCO2(ml/min)'].iloc[-1] - df['VCO2(ml/min)'].iloc[-6]
+        recovery_vco2_2min = df['VCO2(ml/min)'].iloc[-1] - df['VCO2(ml/min)'].iloc[-12]
+        st.metric("VCO₂ Recovery (1 min)", f"{recovery_vco2_1min:.2f} ml/min")
+        st.metric("VCO₂ Recovery (2 min)", f"{recovery_vco2_2min:.2f} ml/min")
 
     if 'RER' in df.columns:
         st.markdown("**RER Recovery Trend**")
