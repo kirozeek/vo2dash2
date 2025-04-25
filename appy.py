@@ -125,7 +125,7 @@ if uploaded_file:
     st.subheader("🧘 Recovery Metrics")
     if 'HR(bpm)' in df.columns:
         recovery_hr = df['HR(bpm)'].iloc[-1] - df['HR(bpm)'].iloc[-10]
-        st.metric("Heart Rate Recovery", f"{recovery_hr:.2f} bpm")
+        st.metric("Heart Rate Recovery", f"{int(round(recovery_hr))} bpm")
 
     if 'VCO2(ml/min)' in df.columns:
         recovery_vco2 = df['VCO2(ml/min)'].iloc[-1] - df['VCO2(ml/min)'].iloc[-10]
