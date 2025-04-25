@@ -149,8 +149,10 @@ if uploaded_file:
         df['VE/VCO2'] = df['VE(l/min)'] / df['VCO2(ml/min)']
         vt1_idx = df['VE/VCO2'].idxmin()
         vt1_hr = df.loc[vt1_idx, 'HR(bpm)'] if 'HR(bpm)' in df.columns else 'N/A'
-        vt2_idx = df['VE/VCO2'].idxmax()
-        vt2_hr = df.loc[vt2_idx, 'HR(bpm)'] if 'HR(bpm)' in df.columns else 'N/A'
+        vt2_candidates = df[df['HR(bpm)'] > vt1_hr]
+        vt2_idx = vt2_candidates['VE/VCO2'].idxmax() if not vt2_candidates.empty else None
+        vt2_hr = df.loc[vt2_idx, 'HR(bpm)'] if vt2_idx and 'HR(bpm)' in df.columns else 'N/A'
+            vt2_hr = 'N/A (lower than VT1 — adjust criteria or confirm test data)'
 
         st.markdown(f"""**Ventilatory Threshold 1 (VT1)**  
 Estimated at HR: **{vt1_hr} bpm** — indicates the transition to moderate intensity.""")
