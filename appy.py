@@ -171,18 +171,21 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
     
 
     st.subheader("🧘 Recovery Metrics")
-    if 'HR(bpm)' in df.columns:
+    if 'HR(bpm)' in df.columns and 'T(sec)' in df.columns:
         max_hr_idx = df['HR(bpm)'].idxmax()
-        recovery_1min_idx = max_hr_idx + 6
-        recovery_2min_idx = max_hr_idx + 12
+        peak_hr_time = df.loc[max_hr_idx, 'T(sec)']
 
-        if recovery_1min_idx < len(df) and recovery_2min_idx < len(df):
-            recovery_1min = df['HR(bpm)'].iloc[max_hr_idx] - df['HR(bpm)'].iloc[recovery_1min_idx]
-            recovery_2min = df['HR(bpm)'].iloc[max_hr_idx] - df['HR(bpm)'].iloc[recovery_2min_idx]
+        hr_1min_idx = df[df['T(sec)'] >= peak_hr_time + 60].first_valid_index()
+        hr_2min_idx = df[df['T(sec)'] >= peak_hr_time + 120].first_valid_index()
+
+        if hr_1min_idx and hr_2min_idx:
+            recovery_1min = df.loc[max_hr_idx, 'HR(bpm)'] - df.loc[hr_1min_idx, 'HR(bpm)']
+            recovery_2min = df.loc[max_hr_idx, 'HR(bpm)'] - df.loc[hr_2min_idx, 'HR(bpm)']
+
             st.metric("Heart Rate Recovery (1 min)", f"{int(round(recovery_1min))} bpm")
             st.metric("Heart Rate Recovery (2 min)", f"{int(round(recovery_2min))} bpm")
 
-            half_recovery_time_sec = df['T(sec)'].iloc[recovery_1min_idx] - df['T(sec)'].iloc[max_hr_idx]
+            half_recovery_time_sec = df.loc[hr_1min_idx, 'T(sec)'] - df.loc[max_hr_idx, 'T(sec)']
 
             if half_recovery_time_sec < 60:
                 recovery_interpretation = "🚀 Elite metabolic recovery"
@@ -196,14 +199,16 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
             st.markdown(f"**Heart Rate Half-Recovery Time:** {half_recovery_time_sec:.0f} seconds")
             st.markdown(f"**Recovery Interpretation:** {recovery_interpretation}")
 
-    if 'VCO2(ml/min)' in df.columns:
+    if 'VCO2(ml/min)' in df.columns and 'T(sec)' in df.columns:
         max_hr_idx = df['HR(bpm)'].idxmax()
-        recovery_vco2_1min_idx = max_hr_idx + 6
-        recovery_vco2_2min_idx = max_hr_idx + 12
+        peak_time = df.loc[max_hr_idx, 'T(sec)']
 
-        if recovery_vco2_1min_idx < len(df) and recovery_vco2_2min_idx < len(df):
-            recovery_vco2_1min = df['VCO2(ml/min)'].iloc[max_hr_idx] - df['VCO2(ml/min)'].iloc[recovery_vco2_1min_idx]
-            recovery_vco2_2min = df['VCO2(ml/min)'].iloc[max_hr_idx] - df['VCO2(ml/min)'].iloc[recovery_vco2_2min_idx]
+        vco2_1min_idx = df[df['T(sec)'] >= peak_time + 60].first_valid_index()
+        vco2_2min_idx = df[df['T(sec)'] >= peak_time + 120].first_valid_index()
+
+        if vco2_1min_idx and vco2_2min_idx:
+            recovery_vco2_1min = df.loc[max_hr_idx, 'VCO2(ml/min)'] - df.loc[vco2_1min_idx, 'VCO2(ml/min)']
+            recovery_vco2_2min = df.loc[max_hr_idx, 'VCO2(ml/min)'] - df.loc[vco2_2min_idx, 'VCO2(ml/min)']
             st.metric("VCO₂ Recovery (1 min)", f"{recovery_vco2_1min:.2f} ml/min")
             st.metric("VCO₂ Recovery (2 min)", f"{recovery_vco2_2min:.2f} ml/min")
 
