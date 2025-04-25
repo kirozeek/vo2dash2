@@ -1,4 +1,4 @@
-import streamlit
-import pandas
-import matplotlib.pyplot
-import seaborn
+streamlit
+pandas
+matplotlib.pyplot
+seaborn
