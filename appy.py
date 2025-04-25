@@ -39,8 +39,14 @@ if uploaded_file:
     for col in df.columns:
         df[col] = pd.to_numeric(df[col], errors='ignore')
 
-    st.subheader("📋 Raw Data")
-    st.dataframe(df.head())
+    st.subheader("🧾 Test Information")
+    st.markdown(f"**Name:** {first_name} {last_name}  ")
+    st.markdown(f"**Date of Test:** {test_date}  ")
+    st.markdown(f"**Gender:** {gender}  ")
+    st.markdown(f"**Age:** {age}  ")
+    st.markdown(f"**Height:** {height} cm  ")
+    st.markdown(f"**Weight:** {weight} kg  ")
+    st.markdown(f"**Target Weight:** {target_weight} kg  ")
 
     def rank_vo2_max(vo2, age, gender):
         vo2_tables = {
