@@ -172,30 +172,40 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
 
     st.subheader("🧘 Recovery Metrics")
     if 'HR(bpm)' in df.columns:
-        recovery_1min = df['HR(bpm)'].iloc[-1] - df['HR(bpm)'].iloc[-6]
-        recovery_2min = df['HR(bpm)'].iloc[-1] - df['HR(bpm)'].iloc[-12]
-        st.metric("Heart Rate Recovery (1 min)", f"{int(round(recovery_1min))} bpm")
-        st.metric("Heart Rate Recovery (2 min)", f"{int(round(recovery_2min))} bpm")
+        max_hr_idx = df['HR(bpm)'].idxmax()
+        recovery_1min_idx = max_hr_idx + 6
+        recovery_2min_idx = max_hr_idx + 12
 
-        half_recovery_time_sec = (df['T(sec)'].iloc[-1] - df['T(sec)'].iloc[-6])
+        if recovery_1min_idx < len(df) and recovery_2min_idx < len(df):
+            recovery_1min = df['HR(bpm)'].iloc[max_hr_idx] - df['HR(bpm)'].iloc[recovery_1min_idx]
+            recovery_2min = df['HR(bpm)'].iloc[max_hr_idx] - df['HR(bpm)'].iloc[recovery_2min_idx]
+            st.metric("Heart Rate Recovery (1 min)", f"{int(round(recovery_1min))} bpm")
+            st.metric("Heart Rate Recovery (2 min)", f"{int(round(recovery_2min))} bpm")
 
-        if half_recovery_time_sec < 60:
-            recovery_interpretation = "🚀 Elite metabolic recovery"
-        elif 60 <= half_recovery_time_sec <= 120:
-            recovery_interpretation = "✅ Good recovery"
-        elif 120 < half_recovery_time_sec <= 180:
-            recovery_interpretation = "⚠️ Delayed recovery"
-        else:
-            recovery_interpretation = "❌ Impaired recovery (clinical concern)"
+            half_recovery_time_sec = df['T(sec)'].iloc[recovery_1min_idx] - df['T(sec)'].iloc[max_hr_idx]
 
-        st.markdown(f"**Heart Rate Half-Recovery Time:** {half_recovery_time_sec:.0f} seconds")
-        st.markdown(f"**Recovery Interpretation:** {recovery_interpretation}")
+            if half_recovery_time_sec < 60:
+                recovery_interpretation = "🚀 Elite metabolic recovery"
+            elif 60 <= half_recovery_time_sec <= 120:
+                recovery_interpretation = "✅ Good recovery"
+            elif 120 < half_recovery_time_sec <= 180:
+                recovery_interpretation = "⚠️ Delayed recovery"
+            else:
+                recovery_interpretation = "❌ Impaired recovery (clinical concern)"
+
+            st.markdown(f"**Heart Rate Half-Recovery Time:** {half_recovery_time_sec:.0f} seconds")
+            st.markdown(f"**Recovery Interpretation:** {recovery_interpretation}")
 
     if 'VCO2(ml/min)' in df.columns:
-        recovery_vco2_1min = df['VCO2(ml/min)'].iloc[-1] - df['VCO2(ml/min)'].iloc[-6]
-        recovery_vco2_2min = df['VCO2(ml/min)'].iloc[-1] - df['VCO2(ml/min)'].iloc[-12]
-        st.metric("VCO₂ Recovery (1 min)", f"{recovery_vco2_1min:.2f} ml/min")
-        st.metric("VCO₂ Recovery (2 min)", f"{recovery_vco2_2min:.2f} ml/min")
+        max_hr_idx = df['HR(bpm)'].idxmax()
+        recovery_vco2_1min_idx = max_hr_idx + 6
+        recovery_vco2_2min_idx = max_hr_idx + 12
+
+        if recovery_vco2_1min_idx < len(df) and recovery_vco2_2min_idx < len(df):
+            recovery_vco2_1min = df['VCO2(ml/min)'].iloc[max_hr_idx] - df['VCO2(ml/min)'].iloc[recovery_vco2_1min_idx]
+            recovery_vco2_2min = df['VCO2(ml/min)'].iloc[max_hr_idx] - df['VCO2(ml/min)'].iloc[recovery_vco2_2min_idx]
+            st.metric("VCO₂ Recovery (1 min)", f"{recovery_vco2_1min:.2f} ml/min")
+            st.metric("VCO₂ Recovery (2 min)", f"{recovery_vco2_2min:.2f} ml/min")
 
     if 'RER' in df.columns:
         st.markdown("**RER Recovery Trend**")
