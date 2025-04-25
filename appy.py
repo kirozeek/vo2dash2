@@ -25,6 +25,14 @@ uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 if uploaded_file:
     df = pd.read_csv(uploaded_file, sep=';', engine='python')
     df.columns = df.columns.str.strip()
+
+    # Smooth data using 10-second averaging
+    if 'T(sec)' in df.columns:
+        df['T(sec)'] = pd.to_numeric(df['T(sec)'], errors='coerce')
+        df = df.sort_values('T(sec)')
+        df = df.set_index('T(sec)')
+        df = df.rolling(window=10, min_periods=1).mean().reset_index()
+    df.columns = df.columns.str.strip()
     for col in df.columns:
         df[col] = pd.to_numeric(df[col], errors='ignore')
 
