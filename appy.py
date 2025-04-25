@@ -148,9 +148,16 @@ if uploaded_file:
         fatmax_hr = int(round(df.loc[fatmax_idx, 'HR(bpm)'])) if 'HR(bpm)' in df.columns else 'N/A'
         st.markdown(f"**FatMax Zone**\n\nFat oxidation peaked at HR: **{fatmax_hr} bpm**")
 
-        crossover_idx = df[df['CARBS(%)'] > df['FAT(%)']].first_valid_index()
-        crossover_hr = int(round(df.loc[crossover_idx, 'HR(bpm)'])) if crossover_idx and 'HR(bpm)' in df.columns else 'N/A'
-        st.markdown(f"**Crossover Point**\n\nCarbs surpassed fat as primary fuel at HR: **{crossover_hr} bpm**")
+        crossover_points = df[df['CARBS(%)'] > df['FAT(%)']]
+        if not crossover_points.empty and 'HR(bpm)' in df.columns:
+            crossover_hr_list = crossover_points['HR(bpm)'].dropna().round().astype(int).tolist()
+            st.markdown(f"**Crossover Points**
+
+Carbs surpassed fat as the dominant fuel at HRs: **{', '.join(map(str, crossover_hr_list))} bpm**")
+        else:
+            st.markdown("**Crossover Points**
+
+No clear crossover detected.")
 
     st.subheader("🧘 Recovery Metrics")
     if 'HR(bpm)' in df.columns:
