@@ -151,13 +151,11 @@ if uploaded_file:
         crossover_points = df[df['CARBS(%)'] > df['FAT(%)']]
         if not crossover_points.empty and 'HR(bpm)' in df.columns:
             crossover_hr_list = crossover_points['HR(bpm)'].dropna().round().astype(int).tolist()
-            st.markdown(f"**Crossover Points**
-
-Carbs surpassed fat as the dominant fuel at HRs: **{', '.join(map(str, crossover_hr_list))} bpm**")
+            st.markdown(f"""**Crossover Points**  
+Carbs surpassed fat as the dominant fuel at HRs: **{', '.join(map(str, crossover_hr_list))} bpm**""")
         else:
-            st.markdown("**Crossover Points**
-
-No clear crossover detected.")
+            st.markdown("""**Crossover Points**  
+No clear crossover detected.""")
 
     st.subheader("🧘 Recovery Metrics")
     if 'HR(bpm)' in df.columns:
