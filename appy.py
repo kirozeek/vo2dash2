@@ -153,10 +153,10 @@ if uploaded_file:
         vt2_idx = vt2_candidates['VE/VCO2'].idxmax() if not vt2_candidates.empty else None
         vt2_hr = int(round(df.loc[vt2_idx, 'HR(bpm)'])) if vt2_idx is not None and 'HR(bpm)' in df.columns else 'N/A'
  
-        st.markdown(f"""**Ventilatory Threshold 1 (VT1)**  
-Estimated at HR: **{vt1_hr} bpm** — indicates the transition to moderate intensity.""")
-        st.markdown(f"""**Ventilatory Threshold 2 (VT2)**  
-Estimated at HR: **{vt2_hr} bpm** — marks onset of intense anaerobic effort.""")
+        st.markdown(f"**Ventilatory Threshold 1 (VT1)**  \
+Estimated at HR: **{int(vt1_hr)} bpm** — indicates the transition to moderate intensity.")
+        st.markdown(f"**Ventilatory Threshold 2 (VT2)**  \
+Estimated at HR: **{int(vt2_hr)} bpm** — marks onset of intense anaerobic effort.")
 
     st.subheader("📉 Summary Statistics")
     st.write(df[numeric_cols].describe())
