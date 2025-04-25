@@ -115,11 +115,11 @@ if uploaded_file:
         st.pyplot(fig)
 
         fatmax_idx = df['FAT(%)'].idxmax()
-        fatmax_hr = df.loc[fatmax_idx, 'HR(bpm)'] if 'HR(bpm)' in df.columns else 'N/A'
+        fatmax_hr = int(round(df.loc[fatmax_idx, 'HR(bpm)'])) if 'HR(bpm)' in df.columns else 'N/A'
         st.markdown(f"**FatMax Zone**\n\nFat oxidation peaked at HR: **{fatmax_hr} bpm**")
 
         crossover_idx = df[df['CARBS(%)'] > df['FAT(%)']].first_valid_index()
-        crossover_hr = df.loc[crossover_idx, 'HR(bpm)'] if crossover_idx and 'HR(bpm)' in df.columns else 'N/A'
+        crossover_hr = int(round(df.loc[crossover_idx, 'HR(bpm)'])) if crossover_idx and 'HR(bpm)' in df.columns else 'N/A'
         st.markdown(f"**Crossover Point**\n\nCarbs surpassed fat as primary fuel at HR: **{crossover_hr} bpm**")
 
     st.subheader("🧘 Recovery Metrics")
@@ -148,10 +148,10 @@ if uploaded_file:
     if 'VE(l/min)' in df.columns and 'VCO2(ml/min)' in df.columns:
         df['VE/VCO2'] = df['VE(l/min)'] / df['VCO2(ml/min)']
         vt1_idx = df['VE/VCO2'].idxmin()
-        vt1_hr = df.loc[vt1_idx, 'HR(bpm)'] if 'HR(bpm)' in df.columns else 'N/A'
+        vt1_hr = int(round(df.loc[vt1_idx, 'HR(bpm)'])) if 'HR(bpm)' in df.columns else 'N/A'
         vt2_candidates = df[df['HR(bpm)'] > vt1_hr]
         vt2_idx = vt2_candidates['VE/VCO2'].idxmax() if not vt2_candidates.empty else None
-        vt2_hr = df.loc[vt2_idx, 'HR(bpm)'] if vt2_idx is not None and 'HR(bpm)' in df.columns else 'N/A'
+        vt2_hr = int(round(df.loc[vt2_idx, 'HR(bpm)'])) if vt2_idx is not None and 'HR(bpm)' in df.columns else 'N/A'
  
         st.markdown(f"""**Ventilatory Threshold 1 (VT1)**  
 Estimated at HR: **{vt1_hr} bpm** — indicates the transition to moderate intensity.""")
