@@ -31,7 +31,10 @@ if uploaded_file:
         df['T(sec)'] = pd.to_numeric(df['T(sec)'], errors='coerce')
         df = df.sort_values('T(sec)')
         df = df.set_index('T(sec)')
-        df = df.rolling(window=10, min_periods=1).mean().reset_index()
+        numeric_df = df.select_dtypes(include=['number'])
+        smoothed_df = numeric_df.rolling(window=10, min_periods=1).mean()
+        df.update(smoothed_df)
+        df = df.reset_index()
     df.columns = df.columns.str.strip()
     for col in df.columns:
         df[col] = pd.to_numeric(df[col], errors='ignore')
