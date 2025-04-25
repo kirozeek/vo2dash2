@@ -177,18 +177,19 @@ Volume of air per breath. Deep, efficient breathing results in a higher VT at lo
         st.metric("Heart Rate Recovery (1 min)", f"{int(round(recovery_1min))} bpm")
         st.metric("Heart Rate Recovery (2 min)", f"{int(round(recovery_2min))} bpm")
 
-        if recovery_1min >= 12:
-            rank_1min = "Good"
-        else:
-            rank_1min = "Poor"
+        half_recovery_time_sec = (df['T(sec)'].iloc[-1] - df['T(sec)'].iloc[-6])
 
-        if recovery_2min >= 22:
-            rank_2min = "Good"
+        if half_recovery_time_sec < 60:
+            recovery_interpretation = "🚀 Elite metabolic recovery"
+        elif 60 <= half_recovery_time_sec <= 120:
+            recovery_interpretation = "✅ Good recovery"
+        elif 120 < half_recovery_time_sec <= 180:
+            recovery_interpretation = "⚠️ Delayed recovery"
         else:
-            rank_2min = "Poor"
+            recovery_interpretation = "❌ Impaired recovery (clinical concern)"
 
-        st.markdown(f"**1 Minute HR Recovery Ranking:** {rank_1min}")
-        st.markdown(f"**2 Minute HR Recovery Ranking:** {rank_2min}")
+        st.markdown(f"**Heart Rate Half-Recovery Time:** {half_recovery_time_sec:.0f} seconds")
+        st.markdown(f"**Recovery Interpretation:** {recovery_interpretation}")
 
     if 'VCO2(ml/min)' in df.columns:
         recovery_vco2_1min = df['VCO2(ml/min)'].iloc[-1] - df['VCO2(ml/min)'].iloc[-6]
