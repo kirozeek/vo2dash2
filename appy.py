@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import io
+import numpy as np
 
 st.set_page_config(page_title="VO2 Max Test Analyzer", layout="wide")
 st.title("VO2 Max Test Analyzer")
@@ -25,12 +25,11 @@ uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 if uploaded_file:
     df = pd.read_csv(uploaded_file, sep=';', engine='python')
     df.columns = df.columns.str.strip()
-
-    st.subheader("Raw Data")
-    st.dataframe(df.head())
-
     for col in df.columns:
         df[col] = pd.to_numeric(df[col], errors='ignore')
+
+    st.subheader("📋 Raw Data")
+    st.dataframe(df.head())
 
     def rank_vo2_max(vo2, age, gender):
         thresholds = {
@@ -42,65 +41,78 @@ if uploaded_file:
                 return rank
         return "Superior" if vo2 > thresholds[gender][-1][1] else "Very Poor"
 
-    st.subheader("Core VO2 Metrics")
+    st.subheader("🏃‍♂️ Core VO₂ Max Test Metrics")
     if 'VO2(ml/min)' in df.columns:
         peak_vo2 = df['VO2(ml/min)'].max()
         vo2_kg = peak_vo2 / weight
+        st.markdown("**VO₂ (ml/min) – Oxygen Consumption**\n\nMeasures how much oxygen your body is using at any given intensity. Peak VO₂ is a top indicator of aerobic fitness.")
+        st.metric("VO₂ Max (ml/min)", f"{peak_vo2:.0f}")
+        st.markdown("**VO₂ per kg (ml/kg/min) – Relative Oxygen Consumption**\n\nAdjusts VO₂ for body weight. Useful for comparing fitness across individuals.")
         ranking = rank_vo2_max(vo2_kg, age, gender)
-        st.metric("VO2 Max (ml/min)", f"{peak_vo2:.0f}")
-        st.metric("VO2 Max (ml/kg/min)", f"{vo2_kg:.2f}", delta=ranking)
+        st.metric("VO₂ Max (ml/kg/min)", f"{vo2_kg:.2f}", delta=ranking)
 
     if 'HR(bpm)' in df.columns:
-        st.metric("Max Heart Rate (bpm)", f"{df['HR(bpm)'].max():.0f}")
+        st.markdown("**Heart Rate (HR, bpm) – Cardiac Effort**\n\nShows cardiovascular response. Important for training zones and recovery.")
+        st.metric("Max Heart Rate", f"{df['HR(bpm)'].max():.0f} bpm")
 
     if 'RER' in df.columns:
+        st.markdown("**Respiratory Exchange Ratio (RER)**\n\nIndicates fuel usage: ~0.7=fat, ~1.0=carb. >1.1 often means VO₂ max effort.")
         st.metric("Max RER", f"{df['RER'].max():.2f}")
 
     if 'VCO2(ml/min)' in df.columns:
-        st.metric("Max VCO2 (ml/min)", f"{df['VCO2(ml/min)'].max():.0f}")
+        st.markdown("**VCO₂ (ml/min) – Carbon Dioxide Output**\n\nUsed with VO₂ to detect anaerobic threshold.")
+        st.metric("Max VCO₂", f"{df['VCO2(ml/min)'].max():.0f}")
 
     if 'VE(l/min)' in df.columns:
-        st.metric("Max Ventilation (VE l/min)", f"{df['VE(l/min)'].max():.1f}")
+        st.markdown("**Ventilation (VE, L/min) – Air Volume per Minute**\n\nReflects respiratory demand and efficiency.")
+        st.metric("Max VE", f"{df['VE(l/min)'].max():.1f} L/min")
 
     if 'MET' in df.columns:
+        st.markdown("**METs (Metabolic Equivalents)**\n\nMeasures effort relative to resting metabolism.")
         st.metric("Peak METs", f"{df['MET'].max():.1f}")
 
-    if 'CARBS(%)' in df.columns and 'FAT(%)' in df.columns:
-        st.subheader("Energy Substrate Utilization")
+    st.subheader("🔥 Energy Metabolism Metrics")
+    if 'EE(kcal/min)' in df.columns:
+        st.markdown("**Energy Expenditure (kcal/min)**\n\nCalories burned per minute. Useful for energy needs and diet planning.")
+        st.metric("Peak EE", f"{df['EE(kcal/min)'].max():.1f} kcal/min")
+
+    if 'FAT(%)' in df.columns and 'CARBS(%)' in df.columns:
+        st.markdown("**Fat vs. Carbohydrate Utilization**\n\nRepresents relative fuel sources.")
         avg_carbs = df['CARBS(%)'].mean()
         avg_fat = df['FAT(%)'].mean()
-        fig2, ax2 = plt.subplots()
-        ax2.pie([avg_carbs, avg_fat], labels=['Carbs', 'Fat'], autopct='%1.1f%%', startangle=90)
-        ax2.set_title("Average Substrate Utilization")
-        st.pyplot(fig2)
+        fig, ax = plt.subplots()
+        ax.pie([avg_carbs, avg_fat], labels=['Carbs', 'Fat'], autopct='%1.1f%%', startangle=90)
+        st.pyplot(fig)
 
-    st.subheader("Recovery Metrics")
+        fatmax_idx = df['FAT(%)'].idxmax()
+        fatmax_hr = df.loc[fatmax_idx, 'HR(bpm)'] if 'HR(bpm)' in df.columns else 'N/A'
+        st.markdown(f"**FatMax Zone**\n\nFat oxidation peaked at HR: **{fatmax_hr} bpm**")
+
+        crossover_idx = df[df['CARBS(%)'] > df['FAT(%)']].first_valid_index()
+        crossover_hr = df.loc[crossover_idx, 'HR(bpm)'] if crossover_idx and 'HR(bpm)' in df.columns else 'N/A'
+        st.markdown(f"**Crossover Point**\n\nCarbs surpassed fat as primary fuel at HR: **{crossover_hr} bpm**")
+
+    st.subheader("🧘 Recovery Metrics")
     if 'HR(bpm)' in df.columns:
         recovery_hr = df['HR(bpm)'].iloc[-1] - df['HR(bpm)'].iloc[-10]
         st.metric("Heart Rate Recovery", f"{recovery_hr:.2f} bpm")
 
     if 'VCO2(ml/min)' in df.columns:
         recovery_vco2 = df['VCO2(ml/min)'].iloc[-1] - df['VCO2(ml/min)'].iloc[-10]
-        st.metric("VCO2 Recovery", f"{recovery_vco2:.2f} ml/min")
+        st.metric("VCO₂ Recovery", f"{recovery_vco2:.2f} ml/min")
 
     if 'RER' in df.columns:
-        st.subheader("RER Over Time")
-        fig3, ax3 = plt.subplots()
-        sns.lineplot(data=df, x=df.index, y='RER', ax=ax3)
-        ax3.set_title("RER Trend")
-        ax3.set_xlabel("Sample Point")
-        ax3.set_ylabel("RER")
-        st.pyplot(fig3)
+        st.markdown("**RER Recovery Trend**")
+        fig, ax = plt.subplots()
+        sns.lineplot(data=df, x=df.index, y='RER', ax=ax)
+        st.pyplot(fig)
 
-    st.subheader("Metric Trends")
+    st.subheader("📊 Metric Trends")
     numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
     selected_col = st.selectbox("Select Metric to Plot", numeric_cols)
     fig, ax = plt.subplots()
     sns.lineplot(data=df, x=df.index, y=selected_col, ax=ax)
-    ax.set_title(f"{selected_col} Over Time")
-    ax.set_xlabel("Sample Point")
-    ax.set_ylabel(selected_col)
     st.pyplot(fig)
 
-    st.subheader("Summary Statistics")
+    st.subheader("📉 Summary Statistics")
     st.write(df[numeric_cols].describe())
