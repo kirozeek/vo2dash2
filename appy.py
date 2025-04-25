@@ -114,5 +114,20 @@ if uploaded_file:
     sns.lineplot(data=df, x=df.index, y=selected_col, ax=ax)
     st.pyplot(fig)
 
+    st.subheader("📊 Performance Threshold Metrics")
+    if 'VE(l/min)' in df.columns and 'VCO2(ml/min)' in df.columns:
+        df['VE/VCO2'] = df['VE(l/min)'] / df['VCO2(ml/min)']
+        vt1_idx = df['VE/VCO2'].idxmin()
+        vt1_hr = df.loc[vt1_idx, 'HR(bpm)'] if 'HR(bpm)' in df.columns else 'N/A'
+        vt2_idx = df['VE/VCO2'].idxmax()
+        vt2_hr = df.loc[vt2_idx, 'HR(bpm)'] if 'HR(bpm)' in df.columns else 'N/A'
+
+        st.markdown(f"**Ventilatory Threshold 1 (VT1)**
+
+Estimated at HR: **{vt1_hr} bpm** — indicates the transition to moderate intensity.")
+        st.markdown(f"**Ventilatory Threshold 2 (VT2)**
+
+Estimated at HR: **{vt2_hr} bpm** — marks onset of intense anaerobic effort.")
+
     st.subheader("📉 Summary Statistics")
     st.write(df[numeric_cols].describe())
